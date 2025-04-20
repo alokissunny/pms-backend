@@ -1,0 +1,1217 @@
+{
+	"info": {
+		"_postman_id": "pms-api-collection",
+		"name": "PMS API Collection",
+		"description": "Property Management System API Collection with Authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"    console.log(\"Token saved to environment variable\");",
+									"} else {",
+									"    console.log(\"No token in response\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with admin credentials to get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						},
+						"description": "Get current logged in user details"
+					},
+					"response": []
+				},
+				{
+					"name": "Register New User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"receptionist\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Register a new user (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"admin123\",\n    \"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "change-password"]
+						},
+						"description": "Change user password"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Rooms",
+			"item": [
+				{
+					"name": "Get All Rooms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/rooms",
+							"host": ["{{base_url}}"],
+							"path": ["rooms"]
+						},
+						"description": "Get all rooms"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Room",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/rooms/:id",
+							"host": ["{{base_url}}"],
+							"path": ["rooms", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_id_here",
+									"description": "Replace with actual room ID"
+								}
+							]
+						},
+						"description": "Get a single room by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomNumber\": \"101\",\n    \"propertyId\": \"property_id_here\",\n    \"roomType\": \"room_type_id_here\",\n    \"floor\": 1,\n    \"status\": \"available\",\n    \"bedType\": \"king\",\n    \"description\": \"Spacious room with city view\",\n    \"images\": [\n        {\n            \"url\": \"https://example.com/room101.jpg\",\n            \"caption\": \"Main room view\",\n            \"isPrimary\": true\n        }\n    ],\n    \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\"],\n    \"notes\": \"Corner room with extra windows\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/rooms",
+							"host": ["{{base_url}}"],
+							"path": ["rooms"]
+						},
+						"description": "Create a new room (requires admin or manager role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomNumber\": \"102\",\n    \"status\": \"maintenance\",\n    \"bedType\": \"queen\",\n    \"description\": \"Updated room description\",\n    \"images\": [\n        {\n            \"url\": \"https://example.com/room102.jpg\",\n            \"caption\": \"Updated room view\",\n            \"isPrimary\": true\n        }\n    ],\n    \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\", \"Room Service\"],\n    \"notes\": \"Updated room notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/rooms/:id",
+							"host": ["{{base_url}}"],
+							"path": ["rooms", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_id_here",
+									"description": "Replace with actual room ID"
+								}
+							]
+						},
+						"description": "Update a room (requires admin or manager role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Room",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/rooms/:id",
+							"host": ["{{base_url}}"],
+							"path": ["rooms", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_id_here",
+									"description": "Replace with actual room ID"
+								}
+							]
+						},
+						"description": "Delete a room (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"occupied\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/rooms/:id/status",
+							"host": ["{{base_url}}"],
+							"path": ["rooms", ":id", "status"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_id_here",
+									"description": "Replace with actual room ID"
+								}
+							]
+						},
+						"description": "Update room status (available, occupied, maintenance, cleaning)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Multiple Rooms",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rooms\": [\n        {\n            \"roomNumber\": \"101\",\n            \"propertyId\": \"property_id_here\",\n            \"roomType\": \"room_type_id_here\",\n            \"floor\": 1,\n            \"status\": \"available\",\n            \"bedType\": \"king\",\n            \"description\": \"Spacious room with city view\",\n            \"images\": [\n                {\n                    \"url\": \"https://example.com/room101.jpg\",\n                    \"caption\": \"Main room view\",\n                    \"isPrimary\": true\n                }\n            ],\n            \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\"],\n            \"notes\": \"Corner room with extra windows\"\n        },\n        {\n            \"roomNumber\": \"102\",\n            \"propertyId\": \"property_id_here\",\n            \"roomType\": \"room_type_id_here\",\n            \"floor\": 1,\n            \"status\": \"available\",\n            \"bedType\": \"queen\",\n            \"description\": \"Comfortable room with garden view\",\n            \"images\": [\n                {\n                    \"url\": \"https://example.com/room102.jpg\",\n                    \"caption\": \"Garden view\",\n                    \"isPrimary\": true\n                }\n            ],\n            \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\"],\n            \"notes\": \"Quiet room\"\n        },\n        {\n            \"roomNumber\": \"201\",\n            \"propertyId\": \"property_id_here\",\n            \"roomType\": \"room_type_id_here\",\n            \"floor\": 2,\n            \"status\": \"available\",\n            \"bedType\": \"double\",\n            \"description\": \"Standard room with city view\",\n            \"images\": [\n                {\n                    \"url\": \"https://example.com/room201.jpg\",\n                    \"caption\": \"City view\",\n                    \"isPrimary\": true\n                }\n            ],\n            \"amenities\": [\"WiFi\", \"TV\"],\n            \"notes\": \"Standard room\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/rooms/bulk",
+							"host": ["{{base_url}}"],
+							"path": ["rooms", "bulk"]
+						},
+						"description": "Create multiple rooms at once (requires admin role)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Room Types",
+			"item": [
+				{
+					"name": "Get All Room Types",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/room-types",
+							"host": ["{{base_url}}"],
+							"path": ["room-types"]
+						},
+						"description": "Get all room types"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Room Type",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/room-types/:id",
+							"host": ["{{base_url}}"],
+							"path": ["room-types", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_type_id_here",
+									"description": "Replace with actual room type ID"
+								}
+							]
+						},
+						"description": "Get a single room type by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Deluxe Room\",\n    \"description\": \"Spacious room with ocean view\",\n    \"baseRate\": 200,\n    \"capacity\": 2,\n    \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/room-types",
+							"host": ["{{base_url}}"],
+							"path": ["room-types"]
+						},
+						"description": "Create a new room type (requires admin or manager role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Type",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"baseRate\": 250,\n    \"amenities\": [\"WiFi\", \"TV\", \"Mini Bar\", \"Room Service\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/room-types/:id",
+							"host": ["{{base_url}}"],
+							"path": ["room-types", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_type_id_here",
+									"description": "Replace with actual room type ID"
+								}
+							]
+						},
+						"description": "Update a room type (requires admin or manager role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Room Type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/room-types/:id",
+							"host": ["{{base_url}}"],
+							"path": ["room-types", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_type_id_here",
+									"description": "Replace with actual room type ID"
+								}
+							]
+						},
+						"description": "Delete a room type (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Rates",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rates\": [\n        {\n            \"date\": \"2024-04-15\",\n            \"price\": 300,\n            \"specialRate\": true,\n            \"description\": \"Peak season\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/room-types/:id/rates",
+							"host": ["{{base_url}}"],
+							"path": ["room-types", ":id", "rates"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_type_id_here",
+									"description": "Replace with actual room type ID"
+								}
+							]
+						},
+						"description": "Update room rates (requires admin or manager role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Room Type Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/room-types/:id/availability?startDate=2024-04-01&endDate=2024-04-30",
+							"host": ["{{base_url}}"],
+							"path": ["room-types", ":id", "availability"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-04-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-04-30"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "room_type_id_here",
+									"description": "Replace with actual room type ID"
+								}
+							]
+						},
+						"description": "Get room type availability for a date range"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Reservations",
+			"item": [
+				{
+					"name": "Get All Reservations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reservations",
+							"host": ["{{base_url}}"],
+							"path": ["reservations"]
+						},
+						"description": "Get all reservations"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Reservation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reservations/:id",
+							"host": ["{{base_url}}"],
+							"path": ["reservations", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "reservation_id_here",
+									"description": "Replace with actual reservation ID"
+								}
+							]
+						},
+						"description": "Get a single reservation by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Reservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reservationNumber\": \"RES-2024-001\",\n    \"guest\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"email\": \"john@example.com\",\n        \"phone\": \"+1234567890\",\n        \"address\": {\n            \"street\": \"123 Guest St\",\n            \"city\": \"Guest City\",\n            \"state\": \"GS\",\n            \"postalCode\": \"12345\",\n            \"country\": \"USA\"\n        }\n    },\n    \"room\": \"room_id_here\",\n    \"roomType\": \"room_type_id_here\",\n    \"checkInDate\": \"2024-04-15T15:00:00Z\",\n    \"checkOutDate\": \"2024-04-20T11:00:00Z\",\n    \"status\": \"confirmed\",\n    \"totalAmount\": 1000,\n    \"paymentStatus\": \"pending\",\n    \"paymentDetails\": [\n        {\n            \"amount\": 500,\n            \"method\": \"credit_card\",\n            \"transactionId\": \"txn_123456\",\n            \"date\": \"2024-04-01T10:00:00Z\"\n        }\n    ],\n    \"source\": \"direct\",\n    \"sourceId\": \"booking_123\",\n    \"specialRequests\": \"Late check-in requested\",\n    \"notes\": \"First time guest\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reservations",
+							"host": ["{{base_url}}"],
+							"path": ["reservations"]
+						},
+						"description": "Create a new reservation"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Reservation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkInDate\": \"2024-04-16T15:00:00Z\",\n    \"checkOutDate\": \"2024-04-21T11:00:00Z\",\n    \"status\": \"confirmed\",\n    \"specialRequests\": \"Updated special requests\",\n    \"notes\": \"Updated notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reservations/:id",
+							"host": ["{{base_url}}"],
+							"path": ["reservations", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "reservation_id_here",
+									"description": "Replace with actual reservation ID"
+								}
+							]
+						},
+						"description": "Update a reservation"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Reservation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"cancelled\",\n    \"notes\": \"Guest requested cancellation\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/reservations/:id/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["reservations", ":id", "cancel"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "reservation_id_here",
+									"description": "Replace with actual reservation ID"
+								}
+							]
+						},
+						"description": "Cancel a reservation"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Room Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/reservations/availability?startDate=2024-04-15&endDate=2024-04-20&roomType=room_type_id_here",
+							"host": ["{{base_url}}"],
+							"path": ["reservations", "availability"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-04-15"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-04-20"
+								},
+								{
+									"key": "roomType",
+									"value": "room_type_id_here"
+								}
+							]
+						},
+						"description": "Check room availability for a date range"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Booking Rules",
+			"item": [
+				{
+					"name": "Get All Booking Rules",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/booking-rules",
+							"host": ["{{base_url}}"],
+							"path": ["booking-rules"]
+						},
+						"description": "Get all booking rules"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Booking Rule",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/booking-rules/:id",
+							"host": ["{{base_url}}"],
+							"path": ["booking-rules", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "rule_id_here",
+									"description": "Replace with actual rule ID"
+								}
+							]
+						},
+						"description": "Get a single booking rule by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Booking Rule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Minimum Stay Rule\",\n    \"description\": \"Minimum 2 nights stay required\",\n    \"type\": \"minimumStay\",\n    \"value\": 2,\n    \"roomTypes\": [\"room_type_id_here\"],\n    \"startDate\": \"2024-04-01\",\n    \"endDate\": \"2024-12-31\",\n    \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/booking-rules",
+							"host": ["{{base_url}}"],
+							"path": ["booking-rules"]
+						},
+						"description": "Create a new booking rule (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Booking Rule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 3,\n    \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/booking-rules/:id",
+							"host": ["{{base_url}}"],
+							"path": ["booking-rules", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "rule_id_here",
+									"description": "Replace with actual rule ID"
+								}
+							]
+						},
+						"description": "Update a booking rule (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Booking Rule",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/booking-rules/:id",
+							"host": ["{{base_url}}"],
+							"path": ["booking-rules", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "rule_id_here",
+									"description": "Replace with actual rule ID"
+								}
+							]
+						},
+						"description": "Delete a booking rule (requires admin role)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Tasks",
+			"item": [
+				{
+					"name": "Get All Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": ["{{base_url}}"],
+							"path": ["tasks"]
+						},
+						"description": "Get all tasks"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Task",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Replace with actual task ID"
+								}
+							]
+						},
+						"description": "Get a single task by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Room Cleaning\",\n    \"description\": \"Clean room 101\",\n    \"assignedTo\": \"staff_id_here\",\n    \"dueDate\": \"2024-04-15T14:00:00Z\",\n    \"priority\": \"high\",\n    \"status\": \"pending\",\n    \"room\": \"room_id_here\",\n    \"type\": \"cleaning\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": ["{{base_url}}"],
+							"path": ["tasks"]
+						},
+						"description": "Create a new task"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"in_progress\",\n    \"notes\": \"Started cleaning\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Replace with actual task ID"
+								}
+							]
+						},
+						"description": "Update a task"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/:id",
+							"host": ["{{base_url}}"],
+							"path": ["tasks", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Replace with actual task ID"
+								}
+							]
+						},
+						"description": "Delete a task"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tasks by Room",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/room/:roomId",
+							"host": ["{{base_url}}"],
+							"path": ["tasks", "room", ":roomId"],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "room_id_here",
+									"description": "Replace with actual room ID"
+								}
+							]
+						},
+						"description": "Get all tasks for a specific room"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tasks by Staff",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/staff/:staffId",
+							"host": ["{{base_url}}"],
+							"path": ["tasks", "staff", ":staffId"],
+							"variable": [
+								{
+									"key": "staffId",
+									"value": "staff_id_here",
+									"description": "Replace with actual staff ID"
+								}
+							]
+						},
+						"description": "Get all tasks assigned to a specific staff member"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Properties",
+			"item": [
+				{
+					"name": "Get All Properties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties",
+							"host": ["{{base_url}}"],
+							"path": ["properties"]
+						},
+						"description": "Get all properties"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Property",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["properties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "property_id_here",
+									"description": "Replace with actual property ID"
+								}
+							]
+						},
+						"description": "Get a single property by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Property",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sample Property\",\n    \"description\": \"A beautiful property in the heart of the city\",\n    \"owner\": \"user_id_here\",\n    \"images\": [\n        {\n            \"url\": \"https://example.com/image1.jpg\",\n            \"caption\": \"Main entrance\",\n            \"isPrimary\": true\n        }\n    ],\n    \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"New York\",\n        \"state\": \"NY\",\n        \"zipCode\": \"10001\",\n        \"country\": \"USA\"\n    },\n    \"location\": {\n        \"type\": \"Point\",\n        \"coordinates\": [-73.935242, 40.730610]\n    },\n    \"nearbyAmenities\": [\n        {\n            \"name\": \"Central Park\",\n            \"type\": \"entertainment\",\n            \"distance\": 1000,\n            \"description\": \"Large urban park\"\n        }\n    ],\n    \"contactNumbers\": [\n        {\n            \"type\": \"main\",\n            \"number\": \"123-456-7890\",\n            \"isPrimary\": true\n        }\n    ],\n    \"email\": \"property@example.com\",\n    \"website\": \"https://example.com\",\n    \"checkInTime\": \"15:00\",\n    \"checkOutTime\": \"11:00\",\n    \"policies\": {\n        \"cancellation\": \"Free cancellation up to 24 hours before check-in\",\n        \"checkIn\": \"Check-in time is 3 PM\",\n        \"checkOut\": \"Check-out time is 11 AM\",\n        \"children\": \"Children are welcome\",\n        \"pets\": \"No pets allowed\"\n    },\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/properties",
+							"host": ["{{base_url}}"],
+							"path": ["properties"]
+						},
+						"description": "Create a new property (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Property",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Property Name\",\n    \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/properties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["properties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "property_id_here",
+									"description": "Replace with actual property ID"
+								}
+							]
+						},
+						"description": "Update a property (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Property",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["properties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "property_id_here",
+									"description": "Replace with actual property ID"
+								}
+							]
+						},
+						"description": "Delete a property (requires admin role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Properties Within Radius",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/properties/radius/:zipcode/:distance",
+							"host": ["{{base_url}}"],
+							"path": ["properties", "radius", ":zipcode", ":distance"],
+							"variable": [
+								{
+									"key": "zipcode",
+									"value": "10001",
+									"description": "Zipcode to search from"
+								},
+								{
+									"key": "distance",
+									"value": "10",
+									"description": "Distance in miles"
+								}
+							]
+						},
+						"description": "Get properties within a specified radius from a zipcode"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+} 

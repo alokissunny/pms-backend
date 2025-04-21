@@ -9,6 +9,11 @@ const RateSchema = new mongoose.Schema({
 
 const RoomTypeSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
+  propertyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Property',
+    required: [true, 'Property ID is required']
+  },
   description: { type: String },
   capacity: { type: Number, required: true },
   baseRate: { type: Number, required: true },

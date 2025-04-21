@@ -56,6 +56,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
   try {
     // Add user to req.body
     req.body.createdBy = req.user.id;
+    req.body.owner = req.user.id;  // Set owner to be the same as createdBy
     
     const property = await Property.create(req.body);
     

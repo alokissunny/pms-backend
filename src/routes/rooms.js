@@ -8,7 +8,10 @@ const { protect, authorize } = require('../middleware/auth');
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const rooms = await Room.find().populate('roomType');
+    const { propertyId } = req.query;
+    const query = propertyId ? { propertyId } : {};
+    
+    const rooms = await Room.find(query).populate('roomType');
     
     res.status(200).json({
       success: true,

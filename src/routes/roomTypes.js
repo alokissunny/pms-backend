@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const RoomType = require('../models/RoomType');
+const Property = require('../models/Property');
 const { protect, authorize } = require('../middleware/auth');
 
 // @route   GET /api/room-types
@@ -8,7 +9,10 @@ const { protect, authorize } = require('../middleware/auth');
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const roomTypes = await RoomType.find();
+    const { propertyId } = req.query;
+    const query = propertyId ? { propertyId } : {};
+    
+    const roomTypes = await RoomType.find(query).populate('propertyId', 'name');
     
     res.status(200).json({
       success: true,
@@ -28,7 +32,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
-    const roomType = await RoomType.findById(req.params.id);
+    const roomType = await RoomType.findById(req.params.id).populate('propertyId', 'name');
     
     if (!roomType) {
       return res.status(404).json({
@@ -54,11 +58,46 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private (admin & manager only)
 router.post('/', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
+    const { propertyId } = req.body;
+
+    // Validate propertyId
+    if (!propertyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Property ID is required'
+      });
+    }
+
+    // Check if property exists
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({
+        success: false,
+        error: 'Property not found'
+      });
+    }
+
+    // Check if room type name is unique within the property
+    const existingRoomType = await RoomType.findOne({
+      name: req.body.name,
+      propertyId
+    });
+
+    if (existingRoomType) {
+      return res.status(400).json({
+        success: false,
+        error: 'Room type name must be unique within the property'
+      });
+    }
+
     const roomType = await RoomType.create(req.body);
+    
+    // Populate propertyId for response
+    const populatedRoomType = await RoomType.findById(roomType._id).populate('propertyId', 'name');
     
     res.status(201).json({
       success: true,
-      data: roomType
+      data: populatedRoomType
     });
   } catch (error) {
     res.status(500).json({

@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
 const RoomType = require('../models/RoomType');
+const Property = require('../models/Property');
 const BookingRule = require('../models/BookingRule');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -228,7 +229,8 @@ router.get('/', protect, async (req, res) => {
       checkOutDate,
       source,
       roomType,
-      room
+      room,
+      propertyId
     } = req.query;
     
     // Build query object
@@ -247,6 +249,7 @@ router.get('/', protect, async (req, res) => {
     if (source) query.source = source;
     if (roomType) query.roomType = roomType;
     if (room) query.room = room;
+    if (propertyId) query.propertyId = propertyId;
     
     // Execute query with pagination
     const page = parseInt(req.query.page, 10) || 1;
@@ -256,6 +259,7 @@ router.get('/', protect, async (req, res) => {
     const reservations = await Reservation.find(query)
       .populate('roomType')
       .populate('room')
+      .populate('propertyId')
       .populate('createdBy', 'firstName lastName')
       .sort({ createdAt: -1 })
       .skip(startIndex)
@@ -289,6 +293,7 @@ router.get('/:id', protect, async (req, res) => {
     const reservation = await Reservation.findById(req.params.id)
       .populate('roomType')
       .populate('room')
+      .populate('propertyId')
       .populate('createdBy', 'firstName lastName');
     
     if (!reservation) {
@@ -315,7 +320,24 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { roomTypeId, checkInDate, checkOutDate } = req.body;
+    const { roomTypeId, checkInDate, checkOutDate, propertyId } = req.body;
+    
+    // Validate propertyId
+    if (!propertyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Property ID is required'
+      });
+    }
+
+    // Check if property exists
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({
+        success: false,
+        error: 'Property not found'
+      });
+    }
     
     // Check booking rules
     const ruleViolations = await checkBookingRules(roomTypeId, checkInDate, checkOutDate);
@@ -355,6 +377,7 @@ router.post('/', protect, async (req, res) => {
     // Populate related fields for response
     const populatedReservation = await Reservation.findById(reservation._id)
       .populate('roomType')
+      .populate('propertyId')
       .populate('createdBy', 'firstName lastName');
     
     res.status(201).json({
@@ -381,6 +404,17 @@ router.put('/:id', protect, async (req, res) => {
         success: false,
         error: 'Reservation not found'
       });
+    }
+
+    // If propertyId is being changed, validate the new property
+    if (req.body.propertyId && req.body.propertyId !== reservation.propertyId.toString()) {
+      const property = await Property.findById(req.body.propertyId);
+      if (!property) {
+        return res.status(404).json({
+          success: false,
+          error: 'Property not found'
+        });
+      }
     }
     
     // Check if status is being changed to checked-in
@@ -430,6 +464,7 @@ router.put('/:id', protect, async (req, res) => {
     )
     .populate('roomType')
     .populate('room')
+    .populate('propertyId')
     .populate('createdBy', 'firstName lastName');
     
     res.status(200).json({

@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const ReservationSchema = new mongoose.Schema({
   reservationNumber: { type: String, required: true, unique: true },
+  propertyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Property',
+    required: [true, 'Property ID is required']
+  },
   guest: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },

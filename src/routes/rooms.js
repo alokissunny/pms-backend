@@ -151,7 +151,7 @@ router.put('/:id', protect, authorize('admin', 'manager'), async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', protect, authorize('admin'), async (req, res) => {
   try {
-    const room = await Room.findById(req.params.id);
+    const room = await Room.findByIdAndDelete(req.params.id);
     
     if (!room) {
       return res.status(404).json({
@@ -159,8 +159,6 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
         error: 'Room not found'
       });
     }
-    
-    await room.remove();
     
     res.status(200).json({
       success: true,
